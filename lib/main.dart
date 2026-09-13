@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'data/sample_watchlist.dart';
-import 'screens/watchlist_screen.dart';
+import 'screens/home_screen.dart';
 import 'state/watchlist_controller.dart';
 import 'theme/theme.dart';
 
@@ -23,7 +23,7 @@ class EdencrewAssignmentApp extends StatelessWidget {
       child: MaterialApp(
         title: '이든크루 평가 과제',
         theme: AppTheme.dark,
-        home: const WatchlistScreen(),
+        home: const HomeScreen(searchStocks: searchSampleStocks),
       ),
     );
   }

@@ -12,7 +12,7 @@ void main() {
   testWidgets('관심 화면이 다크 테마로 렌더링된다', (WidgetTester tester) async {
     await tester.pumpWidget(const EdencrewAssignmentApp());
 
-    expect(find.text('관심'), findsOneWidget);
+    expect(find.text('관심'), findsNWidgets(2));
     expect(find.text('삼성전자'), findsOneWidget);
     expect(
       Theme.of(tester.element(find.byType(Scaffold))).brightness,
@@ -58,7 +58,7 @@ void main() {
     await tester.pump();
     expect(find.text('SK하이닉스'), findsNothing);
     expect(find.text('관심 종목이 없습니다'), findsOneWidget);
-    expect(find.text('관심'), findsOneWidget);
+    expect(find.text('관심'), findsNWidgets(2));
     expect(tester.takeException(), isNull);
   });
 }

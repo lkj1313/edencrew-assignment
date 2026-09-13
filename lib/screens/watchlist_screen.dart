@@ -14,59 +14,49 @@ class WatchlistScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppDimens dimens = context.dimens;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          // 넓은 Mac 창에서도 Figma의 기준 너비로 확인할 수 있게 합니다.
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 393),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: dimens.space4,
-                    vertical: dimens.space3,
-                  ),
-                  child: Text(
-                    '관심',
-                    style: TextStyle(
-                      color: context.colors.textPrimary,
-                      fontSize: 20,
-                      fontWeight: AppTypography.bold,
-                      height: 1.6,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  // 목록 영역만 공통 상태의 변경을 구독합니다.
-                  child: Consumer<WatchlistController>(
-                    builder: (context, watchlist, child) {
-                      final List<Stock> stocks = watchlist.stocks;
-                      if (stocks.isEmpty) {
-                        return const _EmptyWatchlist();
-                      }
-
-                      return ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: stocks.length,
-                        itemBuilder: (context, index) {
-                          final Stock stock = stocks[index];
-                          return StockQuoteRow(
-                            key: ValueKey<String>(stock.id),
-                            stock: stock,
-                            quote: watchlist.quoteFor(stock.symbol),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: dimens.space4,
+            vertical: dimens.space3,
+          ),
+          child: Text(
+            '관심',
+            style: TextStyle(
+              color: context.colors.textPrimary,
+              fontSize: 20,
+              fontWeight: AppTypography.bold,
+              height: 1.6,
             ),
           ),
         ),
-      ),
+        Expanded(
+          // 목록 영역만 공통 상태의 변경을 구독합니다.
+          child: Consumer<WatchlistController>(
+            builder: (context, watchlist, child) {
+              final List<Stock> stocks = watchlist.stocks;
+              if (stocks.isEmpty) {
+                return const _EmptyWatchlist();
+              }
+
+              return ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: stocks.length,
+                itemBuilder: (context, index) {
+                  final Stock stock = stocks[index];
+                  return StockQuoteRow(
+                    key: ValueKey<String>(stock.id),
+                    stock: stock,
+                    quote: watchlist.quoteFor(stock.symbol),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
