@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/stock.dart';
 import '../models/stock_quote.dart';
+import '../models/watchlist_sort.dart';
 
 /// 관심 목록을 한곳에서 관리하고, 변경을 구독하는 화면에 알립니다.
 class WatchlistController extends ChangeNotifier {
@@ -29,15 +30,54 @@ class WatchlistController extends ChangeNotifier {
   bool _disposed = false;
   bool _isRefreshing = false;
   String? _quoteError;
+  WatchlistSort _sort = WatchlistSort.name;
 
   bool get isRefreshing => _isRefreshing;
   String? get quoteError => _quoteError;
+  WatchlistSort get sort => _sort;
 
   final Map<String, Stock> _stocks = <String, Stock>{};
   final Map<String, StockQuote> _quotes = <String, StockQuote>{};
 
   // 외부에서 목록을 직접 수정해 변경 알림을 빠뜨리지 않도록 합니다.
-  List<Stock> get stocks => List<Stock>.unmodifiable(_stocks.values);
+  List<Stock> get stocks {
+    final List<Stock> result = _stocks.values.toList()..sort(_compareStocks);
+    return List<Stock>.unmodifiable(result);
+  }
+
+  void setSort(WatchlistSort value) {
+    if (_sort == value) return;
+    _sort = value;
+    notifyListeners();
+  }
+
+  int _compareStocks(Stock a, Stock b) {
+    final StockQuote? aQuote = _quotes[a.symbol];
+    final StockQuote? bQuote = _quotes[b.symbol];
+    final int comparison = switch (_sort) {
+      WatchlistSort.currentPrice => _compareDescending(
+        aQuote?.currentPrice,
+        bQuote?.currentPrice,
+      ),
+      WatchlistSort.changePercent => _compareDescending(
+        aQuote?.changePercent,
+        bQuote?.changePercent,
+      ),
+      WatchlistSort.name => 0,
+    };
+    if (comparison != 0) return comparison;
+    final int nameComparison = a.name.toLowerCase().compareTo(
+      b.name.toLowerCase(),
+    );
+    return nameComparison != 0 ? nameComparison : a.symbol.compareTo(b.symbol);
+  }
+
+  // 값이 없으면 항상 마지막에 두며, 같은 값은 이름·코드순으로 정합니다.
+  int _compareDescending(num? a, num? b) {
+    if (a == null) return b == null ? 0 : 1;
+    if (b == null) return -1;
+    return b.compareTo(a);
+  }
 
   bool isFavorite(String symbol) => _stocks.containsKey('domestic:$symbol');
 

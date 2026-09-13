@@ -5,6 +5,7 @@ import '../models/stock.dart';
 import '../state/watchlist_controller.dart';
 import '../theme/theme.dart';
 import '../widgets/stock_quote_row.dart';
+import '../widgets/watchlist_sort_button.dart';
 
 /// 관심 화면의 제목과 종목 목록을 배치합니다.
 class WatchlistScreen extends StatelessWidget {
@@ -35,6 +36,7 @@ class WatchlistScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const WatchlistSortButton(),
               Consumer<WatchlistController>(
                 builder: (context, watchlist, child) {
                   return IconButton(
