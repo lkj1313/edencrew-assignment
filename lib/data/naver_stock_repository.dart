@@ -4,17 +4,22 @@ import 'package:charset/charset.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/stock.dart';
+import '../models/daily_price.dart';
 import '../models/stock_quote.dart';
 import 'naver_stock_dto.dart';
+import 'naver_daily_price_dto.dart';
 import 'stock_repository.dart';
 
 class NaverStockRepository implements StockRepository {
-  NaverStockRepository({http.Client? client})
+  NaverStockRepository({http.Client? client, DateTime Function()? now})
     : _client = client ?? http.Client(),
-      _ownsClient = client == null;
+      _ownsClient = client == null,
+      _now = now ?? DateTime.now;
 
   final http.Client _client;
   final bool _ownsClient;
+  final DateTime Function() _now;
+  final Map<String, _DailyCache> _dailyCache = <String, _DailyCache>{};
   final Map<String, Stock> _metadata = <String, Stock>{};
   final Map<String, Future<Stock>> _pendingMetadata = <String, Future<Stock>>{};
 
@@ -23,18 +28,22 @@ class NaverStockRepository implements StockRepository {
   }
 
   Future<Map<String, dynamic>> _getJson(Uri uri) async {
+    return jsonObject(jsonDecode(await _getText(uri)));
+  }
+
+  Future<String> _getText(Uri uri, {bool eucKrFallback = false}) async {
     final http.Response response = await _client
-        .get(uri)
+        .get(uri, headers: const <String, String>{'User-Agent': 'Mozilla/5.0'})
         .timeout(const Duration(seconds: 10));
     if (response.statusCode != 200) {
       throw http.ClientException('HTTP ${response.statusCode}', uri);
     }
     final String contentType =
         response.headers['content-type']?.toLowerCase() ?? '';
-    final String body = contentType.contains('euc-kr')
+    return (contentType.contains('euc-kr') ||
+            (eucKrFallback && !contentType.contains('utf-8')))
         ? const EucKRCodec().decode(response.bodyBytes)
         : utf8.decode(response.bodyBytes);
-    return jsonObject(jsonDecode(body));
   }
 
   @override
@@ -127,4 +136,81 @@ class NaverStockRepository implements StockRepository {
       throw ArgumentError.value(symbol, 'symbol', '6자리 국내 종목 코드가 필요합니다.');
     }
   }
+
+  @override
+  Future<List<DailyPrice>> fetchDailyPrices(
+    String symbol,
+    HistoryPeriod period, {
+    bool Function()? isCancelled,
+  }) async {
+    _validateSymbol(symbol);
+    final DateTime now = _now();
+    _DailyCache? cache = _dailyCache[symbol];
+    // 페이지 번호가 다음 거래일에 밀리므로 오래된 페이지와 섞지 않습니다.
+    if (cache == null ||
+        now.difference(cache.createdAt) >= const Duration(minutes: 5)) {
+      cache = _DailyCache(now);
+      _dailyCache[symbol] = cache;
+    }
+    final Map<String, DailyPrice> rows = <String, DailyPrice>{};
+    int page = 1;
+    while (rows.length < period.tradingDays) {
+      if (isCancelled?.call() ?? false) return const <DailyPrice>[];
+      final DailyPricePageDto result = await _dailyPage(symbol, page, cache);
+      if (isCancelled?.call() ?? false) return const <DailyPrice>[];
+      int added = 0;
+      for (final DailyPriceDto row in result.rows) {
+        if (!rows.containsKey(row.localDate)) {
+          rows[row.localDate] = row.toModel();
+          added++;
+        }
+      }
+      if (page >= result.lastPage || result.rows.isEmpty) break;
+      if (added == 0) throw const FormatException('일별 시세 페이지가 중복되었습니다.');
+      page++;
+    }
+    final List<DailyPrice> sorted = rows.values.toList()
+      ..sort((a, b) => b.localDate.compareTo(a.localDate));
+    return List<DailyPrice>.unmodifiable(sorted.take(period.tradingDays));
+  }
+
+  Future<DailyPricePageDto> _dailyPage(
+    String symbol,
+    int page,
+    _DailyCache cache,
+  ) async {
+    final DailyPricePageDto? saved = cache.pages[page];
+    if (saved != null) return saved;
+    final Future<DailyPricePageDto>? pending = cache.pending[page];
+    if (pending != null) return pending;
+    final Future<DailyPricePageDto> request = _fetchDailyPage(symbol, page);
+    cache.pending[page] = request;
+    try {
+      final DailyPricePageDto result = await request;
+      cache.pages[page] = result;
+      return result;
+    } finally {
+      cache.pending.remove(page);
+    }
+  }
+
+  Future<DailyPricePageDto> _fetchDailyPage(String symbol, int page) async {
+    final String source = await _getText(
+      Uri.https('finance.naver.com', '/item/sise_day.naver', <String, String>{
+        'code': symbol,
+        'page': '$page',
+      }),
+      eucKrFallback: true,
+    );
+    return DailyPricePageDto.fromHtml(source, page: page);
+  }
+}
+
+class _DailyCache {
+  _DailyCache(this.createdAt);
+
+  final DateTime createdAt;
+  final Map<int, DailyPricePageDto> pages = <int, DailyPricePageDto>{};
+  final Map<int, Future<DailyPricePageDto>> pending =
+      <int, Future<DailyPricePageDto>>{};
 }

@@ -9,6 +9,7 @@ import '../theme/theme.dart';
 import '../widgets/empty_state_message.dart';
 import '../widgets/favorite_toast.dart';
 import '../widgets/search_result_row.dart';
+import 'stock_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key, required this.searchStocks});
@@ -79,7 +80,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final OutlineInputBorder border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(dimens.radiusMd),
       borderSide: BorderSide(
-        color: colors.borderSubtle,
+        color: colors.borderStrong,
         width: dimens.borderHairline,
       ),
     );
@@ -88,7 +89,7 @@ class _SearchScreenState extends State<SearchScreen> {
         Padding(
           padding: EdgeInsets.fromLTRB(
             dimens.space4,
-            dimens.space6,
+            dimens.space2,
             dimens.space4,
             dimens.space3,
           ),
@@ -105,15 +106,16 @@ class _SearchScreenState extends State<SearchScreen> {
               cursorColor: colors.accentDefault,
               style: TextStyle(
                 color: colors.textPrimary,
-                fontSize: 14,
-                height: 1.5,
-                fontWeight: AppTypography.regular,
+                fontSize: 15,
+                height: 20 / 15,
+                letterSpacing: -0.1,
+                fontWeight: AppTypography.medium,
               ),
               decoration: InputDecoration(
                 hintText: '종목명 또는 종목코드',
-                hintStyle: TextStyle(color: colors.textDisabled),
+                hintStyle: TextStyle(color: colors.textTertiary),
                 filled: true,
-                fillColor: colors.surfaceRaised,
+                fillColor: colors.surfaceSunken,
                 isDense: true,
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: dimens.space3,
@@ -133,7 +135,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 prefixIcon: Icon(
                   Icons.search_rounded,
                   size: dimens.iconSm,
-                  color: colors.textDisabled,
+                  color: colors.textTertiary,
                 ),
                 suffixIcon: IconButton(
                   tooltip: '검색어 지우기',
@@ -144,7 +146,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   icon: Icon(
                     Icons.close_rounded,
                     size: dimens.iconSm,
-                    color: colors.textDisabled,
+                    color: colors.textTertiary,
                   ),
                 ),
               ),
@@ -205,6 +207,7 @@ class _SearchScreenState extends State<SearchScreen> {
               stock: stock,
               query: _query,
               isFavorite: watchlist.isFavorite(stock.symbol),
+              onTap: () => openStockDetail(context, stock),
               onToggleFavorite: () {
                 final bool registered = watchlist.toggle(stock);
                 showFavoriteToast(context, registered: registered);
