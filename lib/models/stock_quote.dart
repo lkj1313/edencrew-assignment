@@ -6,11 +6,24 @@ class StockQuote {
     required this.symbol,
     required this.currentPrice,
     required this.previousClose,
+    this.openPrice,
+    this.highPrice,
+    this.lowPrice,
+    this.tradingVolume,
+    this.listedStockCount,
   });
 
   final String symbol;
   final int currentPrice;
   final int previousClose;
+  final int? openPrice;
+  final int? highPrice;
+  final int? lowPrice;
+  final int? tradingVolume;
+  final int? listedStockCount;
+
+  int? get marketCapitalization =>
+      listedStockCount == null ? null : currentPrice * listedStockCount!;
 
   // 유효한 전일 종가가 없으면 등락을 계산할 수 없습니다.
   int? get changeAmount =>

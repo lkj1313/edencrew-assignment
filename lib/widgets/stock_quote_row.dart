@@ -7,10 +7,16 @@ import '../utils/price_format.dart';
 
 /// 전달받은 종목 정보를 표시하는 재사용 가능한 목록 한 행입니다.
 class StockQuoteRow extends StatelessWidget {
-  const StockQuoteRow({super.key, required this.stock, this.quote});
+  const StockQuoteRow({
+    super.key,
+    required this.stock,
+    this.quote,
+    this.quoteUnavailable = false,
+  });
 
   final Stock stock;
   final StockQuote? quote;
+  final bool quoteUnavailable;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +78,18 @@ class StockQuoteRow extends StatelessWidget {
           SizedBox(width: dimens.space3),
           Expanded(
             child: currentQuote == null
-                ? _QuoteSkeleton(stockName: stock.name)
+                ? quoteUnavailable
+                      ? Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '시세 없음',
+                            style: TextStyle(
+                              color: colors.textDisabled,
+                              fontSize: 12,
+                            ),
+                          ),
+                        )
+                      : _QuoteSkeleton(stockName: stock.name)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: <Widget>[

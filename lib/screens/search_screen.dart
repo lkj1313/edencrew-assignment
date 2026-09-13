@@ -198,7 +198,8 @@ class _SearchScreenState extends State<SearchScreen> {
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           itemCount: _results.length,
           itemBuilder: (context, index) {
-            final Stock stock = _results[index];
+            final Stock result = _results[index];
+            final Stock stock = watchlist.stockFor(result.symbol) ?? result;
             return SearchResultRow(
               key: ValueKey<String>(stock.id),
               stock: stock,
