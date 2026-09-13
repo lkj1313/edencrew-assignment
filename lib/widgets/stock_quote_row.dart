@@ -12,11 +12,13 @@ class StockQuoteRow extends StatelessWidget {
     required this.stock,
     this.quote,
     this.quoteUnavailable = false,
+    this.onTap,
   });
 
   final Stock stock;
   final StockQuote? quote;
   final bool quoteUnavailable;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -30,95 +32,103 @@ class StockQuoteRow extends StatelessWidget {
       null => colors.textTertiary,
     };
 
-    return Container(
-      constraints: BoxConstraints(minHeight: dimens.rowMinHeight),
-      padding: EdgeInsets.symmetric(
-        horizontal: dimens.space4,
-        vertical: dimens.space2,
-      ),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: colors.borderSubtle,
-            width: dimens.borderHairline,
-          ),
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        constraints: BoxConstraints(minHeight: dimens.rowMinHeight),
+        padding: EdgeInsets.symmetric(
+          horizontal: dimens.space4,
+          vertical: dimens.space3,
         ),
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  stock.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: AppTypography.medium,
-                    height: 1.5,
-                  ),
-                ),
-                Text(
-                  '${stock.symbol} · ${stock.market}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colors.textTertiary,
-                    fontSize: 10,
-                    fontWeight: AppTypography.regular,
-                    height: 1.5,
-                  ),
-                ),
-              ],
+        foregroundDecoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: colors.borderSubtle,
+              width: dimens.borderHairline,
             ),
           ),
-          SizedBox(width: dimens.space3),
-          Expanded(
-            child: currentQuote == null
-                ? quoteUnavailable
-                      ? Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            '시세 없음',
-                            style: TextStyle(
-                              color: colors.textDisabled,
-                              fontSize: 12,
-                            ),
-                          ),
-                        )
-                      : _QuoteSkeleton(stockName: stock.name)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: <Widget>[
-                      Text(
-                        formatInteger(currentQuote.currentPrice),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: AppTypography.medium,
-                          height: 1.5,
-                        ),
-                      ),
-                      Text(
-                        formatPriceChange(currentQuote),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: changeColor,
-                          fontSize: 10,
-                          fontWeight: AppTypography.regular,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
+        ),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    stock.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: AppTypography.medium,
+                      height: 20 / 15,
+                      letterSpacing: -0.1,
+                    ),
                   ),
-          ),
-        ],
+                  SizedBox(height: dimens.space1 / 2),
+                  Text(
+                    '${stock.symbol} · ${stock.market}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: 11,
+                      fontWeight: AppTypography.regular,
+                      height: 14 / 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: dimens.space3),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: dimens.space6 * 7),
+              child: currentQuote == null
+                  ? quoteUnavailable
+                        ? Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              '시세 없음',
+                              style: TextStyle(
+                                color: colors.textDisabled,
+                                fontSize: 12,
+                              ),
+                            ),
+                          )
+                        : _QuoteSkeleton(stockName: stock.name)
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        Text(
+                          formatInteger(currentQuote.currentPrice),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: colors.textPrimary,
+                            fontSize: 15,
+                            fontWeight: AppTypography.medium,
+                            height: 20 / 15,
+                            letterSpacing: -0.1,
+                          ),
+                        ),
+                        SizedBox(height: dimens.space1 / 2),
+                        Text(
+                          formatPriceChange(currentQuote),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: changeColor,
+                            fontSize: 11,
+                            fontWeight: AppTypography.regular,
+                            height: 14 / 11,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -12,7 +12,7 @@ void showFavoriteToast(BuildContext context, {required bool registered}) {
     SnackBar(
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
-      backgroundColor: colors.surfaceSunken,
+      backgroundColor: colors.surfaceOverlay,
       elevation: 0,
       margin: EdgeInsets.fromLTRB(
         dimens.space4,
@@ -26,6 +26,10 @@ void showFavoriteToast(BuildContext context, {required bool registered}) {
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(dimens.radiusLg),
+        side: BorderSide(
+          color: colors.borderSubtle,
+          width: dimens.borderHairline,
+        ),
       ),
       content: Row(
         children: <Widget>[
@@ -40,9 +44,9 @@ void showFavoriteToast(BuildContext context, {required bool registered}) {
               registered ? '관심이 등록되었습니다' : '관심이 해제되었습니다',
               style: TextStyle(
                 color: colors.textPrimary,
-                fontSize: 12,
-                height: 1.5,
-                fontWeight: AppTypography.medium,
+                fontSize: 13,
+                height: 18 / 13,
+                fontWeight: AppTypography.bold,
               ),
             ),
           ),

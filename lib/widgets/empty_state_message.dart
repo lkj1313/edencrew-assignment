@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/theme.dart';
+import 'empty_state_illustration.dart';
 
 class EmptyStateMessage extends StatelessWidget {
   const EmptyStateMessage({
@@ -26,26 +27,42 @@ class EmptyStateMessage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(icon, size: dimens.iconSm * 2, color: colors.textDisabled),
-            SizedBox(height: dimens.space4),
+            switch (icon) {
+              Icons.star_border_rounded => const EmptyStateIllustration(
+                kind: EmptyIllustration.star,
+              ),
+              Icons.search_rounded => const EmptyStateIllustration(
+                kind: EmptyIllustration.search,
+              ),
+              Icons.search_off_rounded => const EmptyStateIllustration(
+                kind: EmptyIllustration.noResults,
+              ),
+              _ => Icon(
+                icon,
+                size: dimens.iconMd * 2,
+                color: colors.textTertiary,
+              ),
+            },
+            SizedBox(height: dimens.space3),
             Text(
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.textSecondary,
-                fontSize: 18,
-                height: 1.5,
-                fontWeight: AppTypography.medium,
+                fontSize: 19,
+                height: 22 / 19,
+                letterSpacing: -0.2,
+                fontWeight: AppTypography.bold,
               ),
             ),
-            SizedBox(height: dimens.space2),
+            SizedBox(height: dimens.space3),
             Text(
               description,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: colors.textDisabled,
-                fontSize: 12,
-                height: 1.5,
+                color: colors.textTertiary,
+                fontSize: 11,
+                height: 14 / 11,
                 fontWeight: AppTypography.regular,
               ),
             ),

@@ -26,7 +26,7 @@ class WatchlistSortButton extends StatelessWidget {
             await showModalBottomSheet<WatchlistSort>(
               context: context,
               constraints: const BoxConstraints(maxWidth: 393),
-              backgroundColor: colors.surfaceSunken,
+              backgroundColor: colors.surfaceOverlay,
               barrierColor: colors.surfaceBase.withValues(alpha: 0.6),
               barrierLabel: '정렬 선택 닫기',
               shape: RoundedRectangleBorder(
@@ -43,9 +43,9 @@ class WatchlistSortButton extends StatelessWidget {
         watchlist.setSort(selected);
       },
       style: TextButton.styleFrom(
-        foregroundColor: colors.textTertiary,
-        minimumSize: Size(0, dimens.space4 * 2),
-        padding: EdgeInsets.symmetric(horizontal: dimens.space2),
+        foregroundColor: colors.textSecondary,
+        minimumSize: Size(0, dimens.iconMd + dimens.space2),
+        padding: EdgeInsets.symmetric(vertical: dimens.space1),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(dimens.radiusSm),
@@ -57,13 +57,12 @@ class WatchlistSortButton extends StatelessWidget {
           Text(
             sort.label,
             style: const TextStyle(
-              fontSize: 12,
-              height: 1.5,
-              fontWeight: AppTypography.regular,
+              fontSize: 13,
+              height: 18 / 13,
+              fontWeight: AppTypography.bold,
             ),
           ),
-          SizedBox(width: dimens.space1),
-          Icon(Icons.south_rounded, size: dimens.iconSm),
+          Icon(Icons.south_rounded, size: dimens.iconMd),
         ],
       ),
     );
@@ -82,69 +81,74 @@ class _SortSheet extends StatelessWidget {
     return SafeArea(
       top: false,
       child: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: dimens.space4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: dimens.space6),
-                child: Text(
-                  '정렬',
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontSize: 18,
-                    height: 1.5,
-                    fontWeight: AppTypography.bold,
-                  ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Container(
+              constraints: BoxConstraints(
+                minHeight: dimens.rowMinHeight + dimens.space2,
+              ),
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.symmetric(horizontal: dimens.space6),
+              child: Text(
+                '정렬',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 19,
+                  height: 22 / 19,
+                  letterSpacing: -0.2,
+                  fontWeight: AppTypography.bold,
                 ),
               ),
-              SizedBox(height: dimens.space2),
-              for (final WatchlistSort option in WatchlistSort.values)
-                Semantics(
-                  selected: option == selected,
-                  child: InkWell(
-                    key: ValueKey<WatchlistSort>(option),
-                    onTap: () => Navigator.of(context).pop(option),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: dimens.rowMinHeight,
+            ),
+            for (final WatchlistSort option in WatchlistSort.values)
+              Semantics(
+                selected: option == selected,
+                child: InkWell(
+                  key: ValueKey<WatchlistSort>(option),
+                  onTap: () => Navigator.of(context).pop(option),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: dimens.rowMinHeight),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: dimens.space6,
+                        vertical: dimens.space3,
                       ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: dimens.space6,
-                          vertical: dimens.space3,
-                        ),
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                option.label,
-                                style: TextStyle(
-                                  color: option == selected
-                                      ? colors.textPrimary
-                                      : colors.textSecondary,
-                                  fontSize: 14,
-                                  height: 1.5,
-                                  fontWeight: AppTypography.regular,
-                                ),
+                      child: Row(
+                        children: <Widget>[
+                          SizedBox.square(
+                            dimension: dimens.space6,
+                            child: option == selected
+                                ? Icon(
+                                    Icons.check_rounded,
+                                    size: dimens.iconMd,
+                                    color: colors.textPrimary,
+                                  )
+                                : null,
+                          ),
+                          SizedBox(width: dimens.space3),
+                          Expanded(
+                            child: Text(
+                              option.label,
+                              style: TextStyle(
+                                color: option == selected
+                                    ? colors.textPrimary
+                                    : colors.textSecondary,
+                                fontSize: 15,
+                                height: 20 / 15,
+                                letterSpacing: -0.1,
+                                fontWeight: AppTypography.medium,
                               ),
                             ),
-                            if (option == selected)
-                              Icon(
-                                Icons.check_rounded,
-                                size: dimens.iconMd,
-                                color: colors.textPrimary,
-                              ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

@@ -31,7 +31,14 @@ class AppBottomNavigation extends StatelessWidget {
           height: dimens.tabBarHeight,
           child: Row(
             children: <Widget>[
-              _tab(context, 0, '관심', Icons.star_border_rounded),
+              _tab(
+                context,
+                0,
+                '관심',
+                selectedIndex == 0
+                    ? Icons.star_rounded
+                    : Icons.star_border_rounded,
+              ),
               _tab(context, 1, '검색', Icons.search_rounded),
             ],
           ),
@@ -65,9 +72,9 @@ class AppBottomNavigation extends StatelessWidget {
                   label,
                   style: TextStyle(
                     color: color,
-                    fontSize: 10,
-                    height: 1.5,
-                    fontWeight: AppTypography.medium,
+                    fontSize: 11,
+                    height: 14 / 11,
+                    fontWeight: AppTypography.regular,
                   ),
                 ),
               ],

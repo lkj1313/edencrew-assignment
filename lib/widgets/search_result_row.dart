@@ -10,84 +10,91 @@ class SearchResultRow extends StatelessWidget {
     required this.query,
     required this.isFavorite,
     required this.onToggleFavorite,
+    this.onTap,
   });
 
   final Stock stock;
   final String query;
   final bool isFavorite;
   final VoidCallback onToggleFavorite;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final AppDimens dimens = context.dimens;
     final AppColors colors = context.colors;
-    return Container(
-      constraints: BoxConstraints(minHeight: dimens.rowMinHeight),
-      padding: EdgeInsets.only(left: dimens.space4, right: dimens.space1),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: colors.borderSubtle,
-            width: dimens.borderHairline,
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        constraints: BoxConstraints(minHeight: dimens.rowMinHeight),
+        padding: EdgeInsets.only(left: dimens.space4, right: dimens.space1),
+        foregroundDecoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: colors.borderSubtle,
+              width: dimens.borderHairline,
+            ),
           ),
         ),
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: dimens.space3),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text.rich(
-                    TextSpan(children: _highlightedName(colors)),
-                    semanticsLabel: stock.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      height: 1.5,
-                      fontWeight: AppTypography.medium,
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: dimens.space3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text.rich(
+                      TextSpan(children: _highlightedName(colors)),
+                      semanticsLabel: stock.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: colors.textPrimary,
+                        fontSize: 15,
+                        height: 20 / 15,
+                        letterSpacing: -0.1,
+                        fontWeight: AppTypography.medium,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '${stock.symbol} · ${stock.market}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: colors.textTertiary,
-                      fontSize: 10,
-                      height: 1.5,
-                      fontWeight: AppTypography.regular,
+                    SizedBox(height: dimens.space1 / 2),
+                    Text(
+                      '${stock.symbol} · ${stock.market}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: colors.textSecondary,
+                        fontSize: 11,
+                        height: 14 / 11,
+                        fontWeight: AppTypography.regular,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          SizedBox(width: dimens.space2),
-          Semantics(
-            toggled: isFavorite,
-            child: IconButton(
-              key: ValueKey<String>('favorite-${stock.symbol}'),
-              tooltip: '${stock.name} 관심 ${isFavorite ? '해제' : '등록'}',
-              constraints: BoxConstraints.tightFor(
-                width: dimens.iconMd + dimens.space6,
-                height: dimens.iconMd + dimens.space6,
-              ),
-              onPressed: onToggleFavorite,
-              icon: Icon(
-                isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-                size: dimens.iconMd,
-                color: isFavorite
-                    ? colors.favoriteActive
-                    : colors.favoriteInactive,
+            SizedBox(width: dimens.space2),
+            Semantics(
+              toggled: isFavorite,
+              child: IconButton(
+                key: ValueKey<String>('favorite-${stock.symbol}'),
+                tooltip: '${stock.name} 관심 ${isFavorite ? '해제' : '등록'}',
+                constraints: BoxConstraints.tightFor(
+                  width: dimens.iconMd + dimens.space6,
+                  height: dimens.iconMd + dimens.space6,
+                ),
+                onPressed: onToggleFavorite,
+                icon: Icon(
+                  isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+                  size: dimens.iconMd,
+                  color: isFavorite
+                      ? colors.favoriteActive
+                      : colors.favoriteInactive,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

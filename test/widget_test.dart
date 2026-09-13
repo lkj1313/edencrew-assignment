@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:edencrew_assignment_starter/main.dart';
 import 'package:edencrew_assignment_starter/data/stock_repository.dart';
+import 'package:edencrew_assignment_starter/models/daily_price.dart';
 import 'package:edencrew_assignment_starter/models/stock.dart';
 import 'package:edencrew_assignment_starter/models/stock_quote.dart';
 import 'package:edencrew_assignment_starter/screens/watchlist_screen.dart';
@@ -74,6 +75,13 @@ void main() {
 }
 
 class _TestRepository implements StockRepository {
+  @override
+  Future<List<DailyPrice>> fetchDailyPrices(
+    String symbol,
+    HistoryPeriod period, {
+    bool Function()? isCancelled,
+  }) async => const <DailyPrice>[];
+
   @override
   Future<List<Stock>> searchStocks(String query) async => const <Stock>[];
 

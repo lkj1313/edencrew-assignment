@@ -84,6 +84,12 @@ class WatchlistController extends ChangeNotifier {
   StockQuote? quoteFor(String symbol) => _quotes[symbol];
   Stock? stockFor(String symbol) => _stocks['domestic:$symbol'];
 
+  void updateStock(Stock stock) {
+    if (!isFavorite(stock.symbol)) return;
+    _stocks[stock.id] = stock;
+    notifyListeners();
+  }
+
   void add(Stock stock) {
     if (_stocks.containsKey(stock.id)) return;
     _stocks[stock.id] = stock;
