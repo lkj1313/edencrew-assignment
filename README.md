@@ -1,117 +1,84 @@
-# Flutter 신입 개발자 과제
+# 국내 주식 관심종목 앱
 
-국내 주식 관심종목 앱의 화면 3개를 **Flutter 코드**로 구현하고, 그중 한 화면을 저희 플랫폼 **Lucy Studio**로 다시 만드는 과제입니다. 전체 기간은 4일입니다.
+Flutter 신입 개발자 과제 진행 중인 프로젝트입니다. 현재 관심·검색 화면과 Naver 검색·시세·종목 기본 정보 API를 연결했습니다.
 
-이 문서는 저장소를 실행하고 디자인 토큰을 쓰는 방법만 다룹니다. **과제 요구사항은 아래 문서에 있습니다.**
+## 실행
 
-| 문서 | 내용 |
-| --- | --- |
-| [`docs/ASSIGNMENT.md`](docs/ASSIGNMENT.md) | 화면별 요구사항, 평가 기준, 제출 방법 |
-| [`docs/NAVER_API.md`](docs/NAVER_API.md) | Naver 데이터 연동 가이드 (endpoint 4개) |
-
-**Figma 시안 링크는 안내 메일에 담겨 있습니다.** 시안의 `Screens` 페이지에는 화면 3개 외에 빈 상태 · 정렬 · 토스트처럼 같은 화면의 다른 상태를 그린 프레임과, 토큰 확인용 `Design Tokens — Dark` 프레임이 함께 있습니다. 어떤 프레임이 무엇인지는 [`docs/ASSIGNMENT.md`의 대상 화면](docs/ASSIGNMENT.md#대상-화면)에 정리해 두었습니다.
-
-AI 도구를 활용해도 괜찮습니다. 다만 이후 기술 면접에서 구현 내용을 구체적으로 질문할 예정이니, 직접 작성한 코드라고 설명할 수 있을 정도로 이해하고 계셔야 합니다.
-
----
-
-## 실행하기
-
-이 저장소를 그대로 사용하면 됩니다. 별도로 프로젝트를 만들지 않아도 됩니다.
+확인 환경: macOS, Flutter 3.47.4 / Dart 3.13.3, Xcode 26.6.
 
 ```bash
 flutter pub get
-flutter run
+flutter run -d macos
 ```
 
-모든 플랫폼으로 실행할 수 있게 만들어져 있습니다. 다만 아래 두 가지를 주의해 주세요.
+Xcode를 설치했지만 명령줄 도구가 다른 경로로 선택되어 있다면 다음과 같이 실행합니다.
 
-- **웹(Chrome)에서는 동작하지 않습니다.** Naver endpoint가 CORS를 허용하지 않아 브라우저에서는 요청이 막힙니다. IDE 기본 실행 대상이 Chrome으로 잡혀 있는 경우가 많으니 실행 대상을 바꿔 주세요.
-- **모바일 기기나 에뮬레이터, 또는 Figma 프레임에 가까운 창 크기에서 확인해 주세요.** 데스크톱에서 창을 크게 띄우고 비교하면 의미가 없습니다.
+```bash
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer flutter run -d macos
+```
 
-macOS 데스크톱으로 확인하실 경우 네트워크 요청에 entitlement가 필요합니다. debug 실행은 기본 설정으로 동작합니다.
+- macOS 최소 실행 버전은 Flutter SDK에 맞춰 12.0으로 설정했습니다. debug·release에 외부 네트워크 접속 entitlement를 추가했습니다.
+- Android 인터넷 권한도 추가했으며, Android·iOS 기기 실행은 아직 확인하지 않았습니다.
+- Naver API의 CORS 제한 때문에 웹 실행은 지원하지 않습니다.
+- 처음 실행하면 관심목록은 비어 있습니다. 검색 탭에서 종목명 또는 6자리 코드를 검색한 뒤 별을 눌러 등록합니다.
+- 관심목록은 메모리에 보관하므로 앱을 다시 시작하면 초기화됩니다. 탭을 이동해도 검색어·결과·스크롤 위치는 유지합니다.
+- 기본 제공 NotoSansKR 폰트와 `lib/theme` 토큰을 사용합니다. 샘플 가격을 실제 시세처럼 표시하는 대체 동작은 없습니다.
 
----
+## 구현 범위
 
-## 저장소 구성
+| 기능 | 현재 상태 |
+| --- | --- |
+| 관심·검색 하단 탭 | 구현 |
+| 관심목록, 빈 상태, 시세 로딩, 새로고침 | 구현 |
+| 검색창·지우기·검색어 강조·초기/결과 없음 화면 | 구현 |
+| 별 버튼 등록·해제, 관심 화면 동기화, 토스트 | 구현 |
+| Naver 검색·실시간 시세·종목 기본 정보 | 요청, DTO, 모델 연결 구현 |
+| 관심목록 정렬 | 가나다순·현재가순·등락률순 구현 |
+| 검색 결과 행 → 종목 상세 이동 | 상세 화면 구현과 함께 연결 예정 |
+| 상세 화면·일별 시세 HTML·기간별 캔들 차트 | 미구현 |
+| Lucy Studio 목표가 알림 | 미구현 |
 
-`flutter create` 직후의 기본 템플릿에 **디자인 토큰과 폰트만 미리 준비해 둔 상태**입니다.
+## 구조와 기술 선택
 
 ```text
-docs/
-  ASSIGNMENT.md           과제 요구사항 · 평가 기준 · 제출 방법
-  NAVER_API.md            Naver 데이터 연동 가이드
 lib/
-  main.dart               앱 진입점. 시작용 화면이 들어 있습니다
-  theme/
-    README.md             Figma 변수 ↔ Dart 필드 대응표
-    app_palette.dart      원시 팔레트 (Figma Primitives)
-    app_colors.dart       시맨틱 색상 토큰 (Figma Semantic / Dark)
-    app_dimens.dart       간격 · 반경 · 크기 토큰 (Figma Scale)
-    app_typography.dart   서체 · 굵기 토큰 (Figma Typography)
-    app_theme.dart        ThemeData 조립 + context 확장
-    theme.dart            barrel
-assets/
-  fonts/                  Noto Sans KR (등록까지 마쳐둔 상태입니다)
-  mock/                   응답 샘플을 저장해 쓰실 위치입니다
+  main.dart       앱 진입점과 Provider 연결
+  models/         종목 식별 정보와 숫자 시세
+  data/           API 요청·DTO·모델 변환·종목 기본 정보 캐시
+  state/          공통 관심목록과 시세 갱신
+  screens/        탭 구조, 관심·검색 화면
+  widgets/        종목 행, 하단 탭, 상태 안내, 토스트
+  utils/          가격과 등락 표시
+  theme/          제공된 디자인 토큰
 ```
 
-`lib/` 아래 나머지 구조는 없습니다. **폴더 구조와 아키텍처는 직접 설계해 주세요.**
+- **Provider + ChangeNotifier**: 여러 화면에서 공유하는 관심목록을 한곳에서 관리합니다. 검색어·로딩 상태처럼 검색 화면에만 필요한 값은 `StatefulWidget`에 둡니다.
+- **[http](https://pub.dev/packages/http)**: 클라이언트를 주입할 수 있어 실제 응답을 저장한 파일과 `MockClient`로 네트워크 없이 테스트할 수 있습니다.
+- **[charset](https://pub.dev/packages/charset)**: 시세 응답의 `Content-Type`이 EUC-KR인 경우 바이트를 올바르게 해석합니다. 다른 JSON 응답은 UTF-8로 해석합니다.
+- 화면은 `StockRepository`에 정의된 기능을 통해 데이터를 받습니다. 원본 JSON 필드는 DTO에서 해석하고, 화면에는 `Stock` / `StockQuote`를 전달합니다.
+- 종목 기본 정보는 등록 시 조회하고 캐시합니다. 같은 코드의 동시 요청도 공유합니다. 검색은 자동완성 응답의 이름·시장으로 빠르게 표시하며, 캐시하거나 관심목록에서 보강한 정보가 있으면 우선 사용합니다. 기본 정보 조회 실패 시 자동완성 API에서 받은 정보를 유지합니다.
 
-`lib/main.dart`의 `StartHereScreen`은 토큰 사용 예시를 겸한 임시 화면입니다. 지우고 직접 구현한 화면으로 바꿔 주세요.
+## 직접 판단한 동작
 
----
+- 검색은 입력 후 **300ms** 동안 변경이 없으면 요청합니다. Enter로 즉시 검색할 수 있습니다. 검색어가 바뀌거나 지워지면 이전 응답을 무시하고, 화면이 닫힌 뒤 도착한 응답도 반영하지 않습니다.
+- 검색 실패는 결과 없음과 구분하고 재시도 버튼을 표시합니다. HTTP 요청은 10초 후 타임아웃 처리합니다. 국내 주식·6자리 코드만 남기고 중복 코드는 하나로 합칩니다.
+- 관심 등록은 즉시 반영합니다. 연속 등록을 **100ms** 동안 모아 관심목록 전체를 한 번의 시세 요청으로 조회합니다. 수동 새로고침도 전체 목록을 묶어 요청합니다.
+- 최초 시세 수신 전에는 스켈레톤을 표시합니다. 실패하거나 일부 시세가 없으면 안내와 재시도 버튼을 표시하며, 기존 시세가 있다면 유지합니다. 시세를 한 번도 받지 못한 종목은 `시세 없음`으로 표시합니다. 전일 종가가 0이면 등락을 보합으로 표시하지 않고 `—`로 표시합니다.
+- 정렬 기본값은 가나다순입니다. 이름은 대소문자를 구분하지 않는 문자순으로 비교하며, 같은 이름은 종목코드순으로 정합니다. 현재가·등락률은 높은 순서이고, 시세 미수신 또는 등락률 계산 불가 항목은 마지막에 둡니다. 동률이면 이름·코드순으로 정합니다. 새 시세를 받으면 선택 기준대로 다시 정렬하며, 탭 이동 중에는 기준을 유지합니다. 앱 재실행 후 기준 저장은 구현하지 않았습니다.
+- 토스트는 **2초** 후 사라지고, 연속 등록·해제 시 마지막 동작의 안내로 교체합니다. 탭 이동 시에는 즉시 닫습니다.
+- 긴 종목명은 한 줄 말줄임으로 처리합니다. 결과 없음 문구에는 입력한 검색어를 그대로 넣고, 긴 문구나 작은 화면에서는 안내 영역을 스크롤할 수 있습니다.
+- 데스크톱에서는 내용 너비를 393으로 제한했습니다. 실제 기기의 상태 바·하단 안전 영역은 `SafeArea`로 처리하며, Figma의 가상 상태 바를 화면에 직접 그리지 않습니다.
+- Figma 게스트 화면으로 배치와 상태를 비교했습니다. 토큰 값은 변경하지 않았으며, 글자 크기·행간의 레이어 수치는 검사 권한이 없어 시각 비교를 기준으로 적용했습니다. 상세 수치 검증은 남아 있습니다.
 
-## 디자인 토큰
+## 검증
 
-색상은 `ThemeExtension`으로 정의되어 있습니다. `AppTheme.dark`가 `MaterialApp`에 이미 연결되어 있으니 `context`로 꺼내 쓰시면 됩니다.
-
-```dart
-MaterialApp(
-  theme: AppTheme.dark,
-  home: const WatchlistScreen(),
-)
+```bash
+flutter analyze
+flutter test
 ```
 
-```dart
-Text(
-  '삼성전자',
-  style: TextStyle(color: context.colors.textPrimary),
-)
+- 테스트 29개: 국내 종목 필터링, DTO·EUC-KR 응답 파싱, 중복 요청 캐시, 묶음 시세 요청, 실패·재시도, 늦은 응답 무시, 검색 강조, 탭 상태 유지, 관심 등록·해제, 토스트와 가격 표시, 세 가지 정렬 기준, 시세 갱신 후 재정렬과 선택창을 검증했습니다.
+- macOS 앱에서 실제 종목 검색, 관심 등록, 관심목록의 실제 가격 표시를 확인했습니다.
+- API 샘플의 취득 시각·인코딩은 [`assets/mock/README.md`](assets/mock/README.md)에 기록했습니다. 샘플은 테스트용이며 실행 중 오류를 숨기는 대체 데이터로 사용하지 않습니다.
 
-Container(
-  padding: EdgeInsets.symmetric(horizontal: context.dimens.space4),
-  decoration: BoxDecoration(
-    color: context.colors.surfaceRaised,
-    borderRadius: BorderRadius.circular(context.dimens.radiusMd),
-  ),
-)
-```
-
-지켜 주셔야 할 것:
-
-- **토큰 값을 수정하지 마세요.** 색상 hex를 화면 코드에 직접 쓰거나 `AppPalette`를 화면에서 바로 참조하지 말고, 항상 `context.colors.*` 시맨틱 토큰을 쓰세요. (필수)
-- 필요한 토큰이 없다고 판단되면 추가해도 됩니다. 다만 왜 추가했는지 메모에 적어 주세요.
-- **글자 크기와 행간은 토큰으로 정의되어 있지 않습니다.** Figma는 서체와 굵기만 변수로 관리하고 있어서, 크기는 각 화면의 텍스트 레이어에서 직접 확인해 주세요.
-
-Figma 변수명과 Dart 필드명, 원시값, hex는 [`lib/theme/README.md`](lib/theme/README.md)에 1:1로 정리해 두었습니다. Figma에서 본 색이 코드의 어느 필드인지 헷갈릴 때 그 표를 보시면 됩니다.
-
-### 폰트
-
-`Noto Sans KR`을 사용합니다. 폰트 파일과 `pubspec.yaml` 등록은 **미리 해두었으니 따로 작업하지 않으셔도 됩니다.**
-
-`assets/fonts/`에 Regular / Medium / Bold 세 가지 굵기가 들어 있고, `AppTypography.fontFamily`(`'NotoSansKR'`)와 같은 이름으로 등록되어 있습니다. `AppTheme.dark`가 이 family를 기본 서체로 잡아둡니다.
-
-다른 방식(예: `google_fonts` 패키지)으로 바꾸셔도 무방합니다. 바꾸셨다면 메모에 적어 주세요.
-
----
-
-## 이 README에 대해
-
-제출 시 이 문서는 **본인 프로젝트의 README로 덮어써 주세요.** 작성할 내용은 [`docs/ASSIGNMENT.md`의 제출 방법](docs/ASSIGNMENT.md#제출-방법)에 정리되어 있습니다. `docs/` 아래 문서는 남겨 두시면 됩니다.
-
-## 라이선스
-
-이 저장소는 이든크루 채용 과제의 스타터 템플릿으로만 제공됩니다. 과제 수행을 위해 복제하고 수정하는 것은 괜찮습니다. 다만 그 범위를 넘어선 재배포나 상업적 이용은 Edencrew의 명시적인 허가 없이 허용되지 않습니다. 자세한 내용은 루트의 `LICENSE` 파일을 확인해 주세요.
-
-**별도로 전달드린 Figma 시안과 Lucy Studio 설치 파일은 외부에 공유하지 말아주세요.**
+과제 원문은 [`docs/ASSIGNMENT.md`](docs/ASSIGNMENT.md), API 안내는 [`docs/NAVER_API.md`](docs/NAVER_API.md)에 있습니다.

@@ -5,6 +5,7 @@ import '../models/stock.dart';
 import '../state/watchlist_controller.dart';
 import '../theme/theme.dart';
 import '../widgets/stock_quote_row.dart';
+import '../widgets/watchlist_sort_button.dart';
 
 /// 관심 화면의 제목과 종목 목록을 배치합니다.
 class WatchlistScreen extends StatelessWidget {
@@ -14,59 +15,115 @@ class WatchlistScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppDimens dimens = context.dimens;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          // 넓은 Mac 창에서도 Figma의 기준 너비로 확인할 수 있게 합니다.
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 393),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: dimens.space4,
-                    vertical: dimens.space3,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: dimens.space4,
+            vertical: dimens.space3,
+          ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  '관심',
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: AppTypography.bold,
+                    height: 1.6,
                   ),
-                  child: Text(
-                    '관심',
-                    style: TextStyle(
-                      color: context.colors.textPrimary,
-                      fontSize: 20,
-                      fontWeight: AppTypography.bold,
-                      height: 1.6,
+                ),
+              ),
+              const WatchlistSortButton(),
+              Consumer<WatchlistController>(
+                builder: (context, watchlist, child) {
+                  return IconButton(
+                    tooltip: '시세 새로고침',
+                    constraints: BoxConstraints.tightFor(
+                      width: dimens.space4 * 2,
+                      height: dimens.space4 * 2,
                     ),
-                  ),
-                ),
-                Expanded(
-                  // 목록 영역만 공통 상태의 변경을 구독합니다.
-                  child: Consumer<WatchlistController>(
-                    builder: (context, watchlist, child) {
-                      final List<Stock> stocks = watchlist.stocks;
-                      if (stocks.isEmpty) {
-                        return const _EmptyWatchlist();
-                      }
-
-                      return ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: stocks.length,
-                        itemBuilder: (context, index) {
-                          final Stock stock = stocks[index];
-                          return StockQuoteRow(
-                            key: ValueKey<String>(stock.id),
-                            stock: stock,
-                            quote: watchlist.quoteFor(stock.symbol),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+                    padding: EdgeInsets.zero,
+                    onPressed:
+                        watchlist.stocks.isEmpty || watchlist.isRefreshing
+                        ? null
+                        : watchlist.refreshQuotes,
+                    icon: watchlist.isRefreshing
+                        ? SizedBox.square(
+                            dimension: dimens.iconSm,
+                            child: CircularProgressIndicator(
+                              strokeWidth: dimens.borderHairline,
+                              color: context.colors.textSecondary,
+                              semanticsLabel: '시세 갱신 중',
+                            ),
+                          )
+                        : Icon(
+                            Icons.refresh_rounded,
+                            size: dimens.iconSm,
+                            color: context.colors.textTertiary,
+                          ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
-      ),
+        Consumer<WatchlistController>(
+          builder: (context, watchlist, child) {
+            if (watchlist.quoteError == null) return const SizedBox.shrink();
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: dimens.space4),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      watchlist.quoteError!,
+                      style: TextStyle(
+                        color: context.colors.feedbackWarning,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: watchlist.isRefreshing
+                        ? null
+                        : watchlist.refreshQuotes,
+                    child: const Text('다시 시도'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        Expanded(
+          // 목록 영역만 공통 상태의 변경을 구독합니다.
+          child: Consumer<WatchlistController>(
+            builder: (context, watchlist, child) {
+              final List<Stock> stocks = watchlist.stocks;
+              if (stocks.isEmpty) {
+                return const _EmptyWatchlist();
+              }
+
+              return ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: stocks.length,
+                itemBuilder: (context, index) {
+                  final Stock stock = stocks[index];
+                  return StockQuoteRow(
+                    key: ValueKey<String>(stock.id),
+                    stock: stock,
+                    quote: watchlist.quoteFor(stock.symbol),
+                    quoteUnavailable:
+                        watchlist.quoteError != null && !watchlist.isRefreshing,
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
